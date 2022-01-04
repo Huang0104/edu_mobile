@@ -33,6 +33,28 @@ const routes = [
     component: () => import(/* webpackChunkName: 'user' */'@/views/user'),
     meta: { requiresAuth: true }
   },
+  // 课程详情路由组件
+  {
+    path: '/course-info/:courseId',
+    name: 'course-info',
+    component: () => import(/* webpackChunkName: 'course-info' */'@/views/course-info'),
+    props: true
+  },
+  // 视频播放路由组件
+  {
+    path: '/course-video/:lessonId',
+    name: 'course-video',
+    component: () => import(/* webpackChunkName: 'course-video' */'@/views/course-info/video'),
+    props: true
+  },
+  // 支付功能路由组件
+  {
+    path: '/pay/:courseId',
+    name: 'pay',
+    component: () => import(/* webpackChunkName: 'pay' */'@/views/pay/index'),
+    meta: { requiresAuth: true },
+    props: true
+  },
   // 错误路由组件
   {
     path: '*',

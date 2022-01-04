@@ -7,16 +7,19 @@
       </van-swipe-item>
     </van-swipe>
     <!-- 中间内容列表 -->
-    <course-content-list></course-content-list>
+    <course-content-list :fetch-data="fetchData"></course-content-list>
   </div>
 </template>
 
 <script>
-import CourseContentList from './CourseContentList.vue'
-import { getAds } from '@/services/course'
+import { Swipe, SwipeItem } from 'vant'
+import CourseContentList from '@/components/CourseContentList'
+import { getAds, getCoursesInfo } from '@/services/course'
 export default {
   name: 'CourseContent',
   components: {
+    VanSwipe: Swipe,
+    VanSwipeItem: SwipeItem,
     CourseContentList
   },
   data () {
@@ -30,6 +33,10 @@ export default {
     this.loadAds()
   },
   methods: {
+    // 传入数据请求
+    fetchData (options) {
+      return getCoursesInfo(options)
+    },
     async loadAds () {
       const { data } = await getAds({
         // spaceKeys 为固定值

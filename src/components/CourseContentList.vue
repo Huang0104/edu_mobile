@@ -13,16 +13,22 @@
     >
       <van-cell
         v-for="item in list"
-        :key="item.id">
+        :key="item.id"
+        @click="$router.push({
+          name: 'course-info',
+          params: {
+            courseId: item.id
+          }
+        })">
         <!-- 图片区域 -->
         <div>
-          <img :src="item.courseImgUrl" alt="">
+          <img :src="item.courseImgUrl || item.image">
         </div>
         <!-- 课程信息区域 -->
         <div class="course-info">
-            <h3 v-text="item.courseName"></h3>
+            <h3 v-text="item.courseName || item.name"></h3>
             <p class="course-preview" v-html="item.previewFirstField"></p>
-            <p class="course-price">
+            <p class="course-price" v-if="item.price">
               <span class="course-discounts">￥{{ item.discounts }}</span>
               <s>￥{{ item.price }}</s>
             </p>
@@ -34,9 +40,21 @@
 </template>
 
 <script>
-import { getCoursesInfo } from '@/services/course'
+import { PullRefresh, List, Cell } from 'vant'
 export default {
   name: 'CourseContentList',
+  components: {
+    VantPullRefresh: PullRefresh,
+    VantList: List,
+    VantCell: Cell
+  },
+  props: {
+    // 用于请求数据的函数
+    fetchData: {
+      type: Function,
+      required: true
+    }
+  },
   data () {
     return {
       // 储存请求的数据
@@ -56,7 +74,7 @@ export default {
     async onRefresh () {
       // 将页数重置为1
       this.currentPage = 1
-      const { data } = await getCoursesInfo({
+      const { data } = await this.fetchData({
         currentPage: this.currentPage,
         pageSize: 10,
         status: 1
@@ -64,6 +82,9 @@ export default {
       // 将数据添加到 list 中
       if (data.data && data.data.records && data.data.records.length !== 0) {
         this.list = data.data.records
+      } else if (data.content && data.content.length !== 0) {
+        // 已购课程信息
+        this.list = data.content
       }
       // 提示
       this.$toast('刷新成功')
@@ -72,7 +93,7 @@ export default {
     },
     // 数据加载操作
     async onLoad () {
-      const { data } = await getCoursesInfo({
+      const { data } = await this.fetchData({
         currentPage: this.currentPage,
         pageSize: 10,
         status: 1
@@ -80,13 +101,17 @@ export default {
       // 将数据添加到 list 中
       if (data.data && data.data.records && data.data.records.length !== 0) {
         this.list.push(...data.data.records)
+      } else if (data.content && data.content.length !== 10) {
+        this.list.push(...data.content)
       }
       // 请求下一页
       this.currentPage++
       // 当前页加载完成，恢复默认值
       this.loading = false
       // 全部数据完毕
-      if (data.data.records.length < 10) {
+      if (data.data && data.data.records && data.data.records.length < 10) {
+        this.finished = true
+      } else if (data.content && data.content.length < 10) {
         this.finished = true
       }
     }
